@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventarios de Equipos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        h1 { color: #333; }
+        form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, button { display: block; margin: 10px 0; padding: 10px; width: 100%; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f2f2f2; }
+        .search { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Sistema de Inventarios de Equipos</h1>
+
+    <form id="equipmentForm">
+        <h2>Agregar Equipo</h2>
+        <input type="text" id="name" placeholder="Nombre del equipo" required>
+        <input type="text" id="description" placeholder="Descripción" required>
+        <input type="number" id="quantity" placeholder="Cantidad" required>
+        <input type="text" id="location" placeholder="Ubicación" required>
+        <button type="submit">Agregar Equipo</button>
+    </form>
+
+    <div class="search">
+        <input type="text" id="search" placeholder="Buscar por nombre">
+    </div>
+
+    <table id="equipmentTable">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Ubicación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="equipmentList">
+            <!-- Los equipos se agregarán aquí dinámicamente -->
+        </tbody>
+    </table>
+
+    <script>
+     const form = document.getElementById('equipmentForm');
+        const tableBody = document.getElementById('equipmentList');
+        const searchInput = document.getElementById('search');
+        let equipmentList = JSON.parse(localStorage.getItem('equipment')) || [];
+
+        function renderTable(filter = '') {
+            tableBody.innerHTML = '';
+            equipmentList.filter(item => item.name.toLowerCase().includes(filter.toLowerCase())).forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.description}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.location}</td>
+                    <td>
+                        <button onclick="editEquipment(${index})">Editar</button>
+                        <button onclick="deleteEquipment(${index})">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const description = document.getElementById('description').value;
+            const quantity = document.getElementById('quantity').value;
+            const location = document.getElementById('location').value;
+            
+            equipmentList.push({ name, description, quantity, location });
+            localStorage.setItem('equipment', JSON.stringify(equipmentList));
+            renderTable();
+            form.reset();
+        });
+
+        function editEquipment(index) {
+            const item = equipmentList[index];
+            document.getElementById('name').value = item.name;
+            document.getElementById('description').value = item.description;
+            document.getElementById('quantity').value = item.quantity;
+            document.getElementById('location').value = item.location;
+            deleteEquipment(index);
+        }
+
+        function deleteEquipment(index) {
+            equipmentList.splice(index, 1);
+            localStorage.setItem('equipment', JSON.stringify(equipmentList));
+            renderTable();
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            renderTable(e.target.value);
+        });
+
+        renderTable();
+    </script>
+</body>
+</html>
